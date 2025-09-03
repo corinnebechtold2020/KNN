@@ -9,10 +9,15 @@ function randn_bm(mean, std) {
     return num * std + mean;
 }
 
-// Generate points
-function generatePoints(n, meanX, meanY, std, color) {
+
+// Generate points with more overlap and random dispersion
+function generatePoints(n, color) {
     let pts = [];
     for(let i=0; i<n; i++) {
+        // Overlapping: both classes drawn from similar means, wide std
+        let meanX = 250 + randn_bm(0, 60); // center with some jitter
+        let meanY = 250 + randn_bm(0, 60);
+        let std = 70;
         pts.push({
             x: randn_bm(meanX, std),
             y: randn_bm(meanY, std),
@@ -24,18 +29,31 @@ function generatePoints(n, meanX, meanY, std, color) {
 
 const canvas = document.getElementById('plot');
 const ctx = canvas.getContext('2d');
+
 const kSelect = document.getElementById('k-select');
 const classifyBtn = document.getElementById('classify-btn');
+const scatterBtn = document.getElementById('scatter-btn');
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 
+
 // Initial points
-let points = [
-    ...generatePoints(30, 150, 350, 50, 'red'),
-    ...generatePoints(30, 350, 150, 50, 'blue')
-];
+let points = [];
 let unknownPoint = null;
+
+function scatterInitialPoints() {
+    points = [
+        ...generatePoints(30, 'red'),
+        ...generatePoints(30, 'blue')
+    ];
+    unknownPoint = null;
+    classifyBtn.disabled = true;
+    drawPoints();
+}
+
+// Scatter on load
+scatterInitialPoints();
 
 function drawPoints() {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -64,7 +82,9 @@ function drawPoints() {
     }
 }
 
-drawPoints();
+
+// Scatter button event
+scatterBtn.addEventListener('click', scatterInitialPoints);
 
 canvas.addEventListener('click', function(e) {
     const rect = canvas.getBoundingClientRect();
