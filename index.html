@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K Nearest Neighbors Visualizer</title>
+    <style>
+        body { font-family: sans-serif; background: #f8f8f8; margin: 0; padding: 0; }
+        .container { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; margin-top: 40px; }
+        .controls { margin-left: 40px; display: flex; flex-direction: column; gap: 20px; }
+        canvas { background: #fff; border: 1px solid #ccc; box-shadow: 0 2px 8px #0001; }
+        label { font-size: 1.1em; }
+        button, select { font-size: 1em; padding: 6px 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="plot" width="500" height="500"></canvas>
+        <div class="controls">
+            <label for="k-select">K value:</label>
+            <select id="k-select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+            <button id="classify-btn" disabled>Classify</button>
+        </div>
+    </div>
+    <script src="knn.js"></script>
+</body>
+</html>
