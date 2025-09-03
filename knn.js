@@ -41,6 +41,7 @@ const HEIGHT = canvas.height;
 // Initial points
 let points = [];
 let unknownPoint = null;
+let neighborIndices = [];
 
 function scatterInitialPoints() {
     points = [
@@ -57,8 +58,24 @@ scatterInitialPoints();
 
 function drawPoints() {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    // Draw shadow/highlight for k nearest neighbors
+    if (unknownPoint && neighborIndices.length > 0) {
+        for (const idx of neighborIndices) {
+            const pt = points[idx];
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 16, 0, 2 * Math.PI);
+            ctx.globalAlpha = 0.18;
+            ctx.fillStyle = pt.color === 'red' ? '#ff0000' : '#0000ff';
+            ctx.shadowColor = pt.color === 'red' ? '#ff0000' : '#0000ff';
+            ctx.shadowBlur = 16;
+            ctx.fill();
+            ctx.restore();
+        }
+    }
     // Draw known points
-    for(const pt of points) {
+    for(let i = 0; i < points.length; i++) {
+        const pt = points[i];
         ctx.beginPath();
         ctx.arc(pt.x, pt.y, 8, 0, 2*Math.PI);
         ctx.fillStyle = pt.color;
@@ -84,7 +101,10 @@ function drawPoints() {
 
 
 // Scatter button event
-scatterBtn.addEventListener('click', scatterInitialPoints);
+scatterBtn.addEventListener('click', function() {
+    scatterInitialPoints();
+    neighborIndices = [];
+});
 
 canvas.addEventListener('click', function(e) {
     const rect = canvas.getBoundingClientRect();
@@ -93,6 +113,11 @@ canvas.addEventListener('click', function(e) {
     // Only one unknown point at a time
     unknownPoint = { x, y, color: 'green' };
     classifyBtn.disabled = false;
+    // Find k nearest neighbors for shadow
+    const k = parseInt(kSelect.value);
+    let dists = points.map((pt, idx) => ({idx, dist: distance(pt, unknownPoint)}));
+    dists.sort((a,b) => a.dist - b.dist);
+    neighborIndices = dists.slice(0, k).map(obj => obj.idx);
     drawPoints();
 });
 
@@ -104,12 +129,13 @@ function classifyKNN() {
     if(!unknownPoint) return;
     const k = parseInt(kSelect.value);
     // Compute distances
-    let dists = points.map(pt => ({...pt, dist: distance(pt, unknownPoint)}));
+    let dists = points.map((pt, idx) => ({...pt, idx, dist: distance(pt, unknownPoint)}));
     dists.sort((a,b) => a.dist - b.dist);
     let neighbors = dists.slice(0, k);
     let reds = neighbors.filter(pt => pt.color === 'red').length;
     let blues = neighbors.filter(pt => pt.color === 'blue').length;
     unknownPoint.color = reds > blues ? 'red' : 'blue';
+    neighborIndices = neighbors.map(obj => obj.idx); // keep highlighting after classify
     drawPoints();
     classifyBtn.disabled = true;
 }
